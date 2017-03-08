@@ -112,6 +112,16 @@ class PropertyObject implements PropertyObjectInterface
     }
 
     /**
+     * Magic method, to check if we have a given attribute we can serve via __get.
+     * @param  string $key
+     * @return mixed
+     */
+    public function __isset($key)
+    {
+        return array_key_exists($key, $this->attributes);
+    }
+
+    /**
      * get all of the non-blank features as a collection.
      * @return \Illuminate\Support\Collection
      * @api

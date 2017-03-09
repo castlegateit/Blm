@@ -128,11 +128,11 @@ class Parser implements ParserInterface
         array_pop($rows);
 
         $this->logger->debug('Parsed rows for data', [
-                'offset start'=>$dataStartOffset,
-                'offset finish'=>$dataEndOffset,
-                'EoR delimiter'=>$this->eor,
-                'rows found'=>sizeof($rows)
-            ]);
+            'offset start'=>$dataStartOffset,
+            'offset finish'=>$dataEndOffset,
+            'EoR delimiter'=>$this->eor,
+            'rows found'=>sizeof($rows)
+        ]);
         //loop over the array, and parse the rows.
         for ($i = 0; $i < sizeof($rows); $i++) {
             $rows[$i] = $this->parseRow(trim($rows[$i]));
@@ -146,16 +146,16 @@ class Parser implements ParserInterface
         foreach ($rows as $row) {
             if (sizeof($row) !== sizeof($fieldTitles)) {
                 $this->logger->critical('BLM file definition mismatch', [
-                        'property'=>$row[0],
-                        'expected field count'=>sizeof($fieldTitles),
-                        'actual size'=>sizeof($row)
-                    ]);
+                    'property'=>$row[0],
+                    'expected field count'=>sizeof($fieldTitles),
+                    'actual size'=>sizeof($row)
+                ]);
                 throw new InvalidBLMException(
                     'Property with ID:' . $row[0]
                     .' contains a different number of fields, than the header definition.'
                 );
             }
-            $finalRows[] = new PropertyObject(array_combine($fieldTitles, $row));
+            $finalRows[] = $this->createPropertyFromRow($fieldTitles, $row);
             $this->logger->debug('Created property object', ['property reference'=>$row[0]]);
         }
         $collection = new Collection($finalRows);
@@ -172,9 +172,9 @@ class Parser implements ParserInterface
     {
         $result = explode($this->eof, substr($row, 0, -1));
         $this->logger->debug('Parsed row.', [
-                'fieldCount'=>sizeof($result),
-                'property'=>$result[0]
-            ]);
+            'fieldCount'=>sizeof($result),
+            'property'=>$result[0]
+        ]);
 
         return $result;
     }
@@ -293,5 +293,16 @@ class Parser implements ParserInterface
     public function setLogger(LoggerInterface $logger)
     {
         $this->logger = $logger;
+    }
+
+    /**
+     * @param array $fieldTitles
+     * @param $row
+     *
+     * @return PropertyObject
+     */
+    protected function createPropertyFromRow(array $fieldTitles, $row)
+    {
+        return new PropertyObject(array_combine($fieldTitles, $row));
     }
 }

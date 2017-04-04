@@ -461,4 +461,37 @@ class PropertyObject implements PropertyObjectInterface
         return $map[$this->attributes['transTypeId']];
     }
 
+    /**
+     * Get all non-empty virtual tour properties as a collection
+     * @return Collection
+     * @api
+     */
+    public function getVirtualTourEntries()
+    {
+        //gets image keys if already calculated, otherwise calculates them.
+
+        if (!isset($this->internal['virtualtours'])) {
+            $imageKeys = array_filter(array_keys($this->attributes), function (&$element) {
+                return (preg_match('/mediaVirtualTour[0-9][0-9]/',$element));
+            });
+            $this->internal['virtualtours'] = $imageKeys;
+        }
+        $keyIntersects = array_intersect_key(
+            $this->attributes,
+            array_flip($this->internal['virtualtours'])
+        );
+        foreach ($keyIntersects as $k => $v) {
+            $captionKey = str_replace('mediaVirtualTour','mediaVirtualTourText',$k);
+
+            if (empty($v)) {
+                unset($keyIntersects[$k]);
+                continue;
+            }
+
+            $keyIntersects[$k] = new MediaObject($v, isset($this->{$captionKey}) ? $this->{$captionKey} : null, 'VirtualTour');
+        }
+
+        return  Collection::make($keyIntersects);
+    }
+
 }

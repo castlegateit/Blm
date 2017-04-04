@@ -45,22 +45,22 @@ class PropertyObject implements PropertyObjectInterface
      * Contains the property attributes
      * @var array
      */
-    private $attributes;
+    protected $attributes;
     /**
      * Internal cache of feature/image keys
      * @var array
      */
-    private $internal = array('features'=>null,'images'=>null,'epcs'=>null);
+    protected $internal = array('features'=>null,'images'=>null,'epcs'=>null);
     /**
      * Internal cache of public getters available for use by magic get method
      * @var array
      */
-    private $internalMethods = [];
+    protected $internalMethods = [];
     /**
      * used in magic get method to get a list of publicly available methods.
      * @var \ReflectionClass
      */
-    private $reflector;
+    protected $reflector;
     /**
      * Create a new PropertyObject
      * @param $attributes array
@@ -90,8 +90,8 @@ class PropertyObject implements PropertyObjectInterface
                 $methods[$k] = $v->name;
             }
             $methods = array_filter($methods,function (&$element) {
-                    return substr($element,0,2) !== '__';
-                });
+                return substr($element,0,2) !== '__';
+            });
             $this->internalMethods = $methods;
         }
         if (in_array($methodName,$this->internalMethods)) {
@@ -131,7 +131,7 @@ class PropertyObject implements PropertyObjectInterface
         //gets feature keys if already calculated, otherwise calculates them.
         if (!isset($this->internal['features'])) {
             $featureKeys = array_filter(array_keys($this->attributes), function (&$element) {
-                    return (strpos($element, 'feature')===0);
+                return (strpos($element, 'feature')===0);
             });
             $this->internal['features'] = $featureKeys;
         }
@@ -155,13 +155,13 @@ class PropertyObject implements PropertyObjectInterface
 
         if (!isset($this->internal['images'])) {
             $imageKeys = array_filter(array_keys(array_filter($this->attributes)), function (&$element) {
-                    $success = (preg_match('/mediaImage[0-9][0-9]/',$element)); //test to confirm it is an image
-                    if ($success) { //test to confirm it is not an epc.
-                        preg_match('!\d+!', $element, $matches);
-                        $success = $success && ($matches[0] < 60);
-                    }
+                $success = (preg_match('/mediaImage[0-9][0-9]/',$element)); //test to confirm it is an image
+                if ($success) { //test to confirm it is not an epc.
+                    preg_match('!\d+!', $element, $matches);
+                    $success = $success && ($matches[0] < 60);
+                }
 
-                    return $success;
+                return $success;
             });
             $this->internal['images'] = $imageKeys;
         }
@@ -192,8 +192,8 @@ class PropertyObject implements PropertyObjectInterface
 
         if (!isset($this->internal['epcs'])) {
             $imageKeys = array_filter(array_keys($this->attributes), function (&$element) {
-                    return (preg_match('/mediaImage6[0-1]/',$element) || preg_match('/mediaDocument[5-9][0-9]/',$element));
-                });
+                return (preg_match('/mediaImage6[0-1]/',$element) || preg_match('/mediaDocument[5-9][0-9]/',$element));
+            });
             $this->internal['epcs'] = $imageKeys;
         }
         $keyIntersects = array_intersect_key(
@@ -213,7 +213,7 @@ class PropertyObject implements PropertyObjectInterface
 
         return  Collection::make($keyIntersects);
     }
-    
+
     /**
      * Get all non-empty floorplan properties as a collection
      * @return Collection
@@ -225,8 +225,8 @@ class PropertyObject implements PropertyObjectInterface
 
         if (!isset($this->internal['floorplans'])) {
             $imageKeys = array_filter(array_keys($this->attributes), function (&$element) {
-                    return (preg_match('/mediaFloorPlan0[0-1]/',$element));
-                });
+                return (preg_match('/mediaFloorPlan0[0-1]/',$element));
+            });
             $this->internal['floorplans'] = $imageKeys;
         }
         $keyIntersects = array_intersect_key(
